@@ -1,63 +1,66 @@
-package repositories
+package repositories_test
 
 import (
 	"DeliveryClub/internal/models"
+	"DeliveryClub/internal/repositories"
 	"context"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
-func TestWarehouseRepository(t *testing.T) {
-	Warehouse1 := models.Warehouse{ID: 1, Location: "Moscow", Email: "example@email.com"}
-	Warehouse2 := models.Warehouse{ID: 2, Location: "Smolensk", Email: "example1@email.com"}
-
-	warehouses := []models.Warehouse{Warehouse1, Warehouse2}
+func TestWarehouseRepository_Get(t *testing.T) {
+	warehouses := []models.Warehouse{
+		{ID: 1, Location: "Location 1", Email: "email1@example.com"},
+		{ID: 2, Location: "Location 2", Email: "email2@example.com"},
+	}
+	repo := repositories.NewWarehouseRepository(warehouses)
 
 	ctx := context.Background()
-	repo := NewWarehouseRepository(warehouses)
-
-	// Test Get method
 	result, err := repo.Get(ctx)
-	if err != nil {
-		t.Errorf("expected no error but got %v", err)
-	}
-	if len(result) != 2 {
-		t.Errorf("expected 2 warehouses but got %d", len(result))
-	}
 
-	// Test AddRange method
+	assert.NoError(t, err)
+	assert.Equal(t, warehouses, result)
+}
+
+func TestWarehouseRepository_AddRange(t *testing.T) {
+	warehouses := []models.Warehouse{
+		{ID: 1, Location: "Location 1", Email: "email1@example.com"},
+	}
+	repo := repositories.NewWarehouseRepository(warehouses)
+
 	newWarehouses := []models.Warehouse{
-		{ID: 3, Location: "Warehouse C", Email: "c@example.com"},
-	}
-	err = repo.AddRange(ctx, newWarehouses)
-	if err != nil {
-		t.Errorf("expected no error but got %v", err)
+		{ID: 2, Location: "Location 2", Email: "email2@example.com"},
+		{ID: 3, Location: "Location 3", Email: "email3@example.com"},
 	}
 
-	result, err = repo.Get(ctx)
-	if err != nil {
-		t.Errorf("expected no error but got %v", err)
-	}
-	if len(result) != 3 {
-		t.Errorf("expected 3 warehouses but got %d", len(result))
-	}
+	ctx := context.Background()
+	err := repo.AddRange(ctx, newWarehouses)
+	assert.NoError(t, err)
 
-	// Test UpdateRange method
+	expected := append(warehouses, newWarehouses...)
+	result, err := repo.Get(ctx)
+	assert.NoError(t, err)
+	assert.Equal(t, expected, result)
+}
+
+func TestWarehouseRepository_UpdateRange(t *testing.T) {
+	initialWarehouses := []models.Warehouse{
+		{ID: 1, Location: "Location 1", Email: "email1@example.com"},
+		{ID: 2, Location: "Location 2", Email: "email2@example.com"},
+	}
+	repo := repositories.NewWarehouseRepository(initialWarehouses)
+
 	updatedWarehouses := []models.Warehouse{
-		{ID: 2, Location: "Smolensk Updated", Email: "updated@example.com"},
-	}
-	err = repo.UpdateRange(ctx, updatedWarehouses)
-	if err != nil {
-		t.Errorf("expected no error but got %v", err)
+		{ID: 1, Location: "Updated Location 1", Email: "updatedemail1@example.com"},
+		{ID: 2, Location: "Updated Location 2", Email: "updatedemail2@example.com"},
 	}
 
-	result, err = repo.Get(ctx)
-	if err != nil {
-		t.Errorf("expected no error but got %v", err)
-	}
-	if result[1].Location != "Smolensk Updated" {
-		t.Errorf("expected 'Smolensk Updated' but got %s", result[1].Location)
-	}
-	if result[1].Email != "updated@example.com" {
-		t.Errorf("expected 'updated@example.com' but got %s", result[1].Email)
-	}
+	ctx := context.Background()
+	err := repo.UpdateRange(ctx, updatedWarehouses)
+	assert.NoError(t, err)
+
+	result, err := repo.Get(ctx)
+	assert.NoError(t, err)
+	assert.Equal(t, updatedWarehouses, result)
 }

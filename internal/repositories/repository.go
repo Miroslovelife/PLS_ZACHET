@@ -35,3 +35,8 @@ func (wr *WarehouseRepository) UpdateRange(ctx context.Context, items []models.W
 	}
 	return nil
 }
+
+// Exported method for testing purposes
+func (wr *WarehouseRepository) SetWarehouses(warehouses []models.Warehouse) {
+	wr.warehouses = warehouses
+}

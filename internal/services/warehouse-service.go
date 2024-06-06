@@ -2,22 +2,29 @@ package services
 
 import (
 	"DeliveryClub/internal/models"
-	"DeliveryClub/internal/repositories"
 	"context"
 )
 
-type WarehouseService struct {
-	repository *repositories.WarehouseRepository
+type WarehouseRepositoryInterface interface {
+	Get(ctx context.Context) ([]models.Warehouse, error)
+	AddRange(ctx context.Context, items []models.Warehouse) error
 }
 
-func NewWarehouseService(repo *repositories.WarehouseRepository) *WarehouseService {
-	return &WarehouseService{repository: repo}
+type WarehouseRepository struct {
+	warehouses []models.Warehouse
 }
 
-func (ws *WarehouseService) GetWarehouses(ctx context.Context) ([]models.Warehouse, error) {
-	return ws.repository.Get(ctx)
+func NewWarehouseRepository(warehouses []models.Warehouse) *WarehouseRepository {
+	return &WarehouseRepository{
+		warehouses: warehouses,
+	}
 }
 
-func (ws *WarehouseService) RegisterOrUpdateWarehouses(ctx context.Context, warehouses []models.Warehouse) error {
-	return ws.repository.AddRange(ctx, warehouses)
+func (wr *WarehouseRepository) Get(ctx context.Context) ([]models.Warehouse, error) {
+	return wr.warehouses, nil
+}
+
+func (wr *WarehouseRepository) AddRange(ctx context.Context, items []models.Warehouse) error {
+	wr.warehouses = append(wr.warehouses, items...)
+	return nil
 }
